@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -226,6 +225,31 @@
           </div>
         </div>
       </div>
+      
+      <!-- Controles de navegación y favoritos -->
+      <div class="flex justify-between items-center p-4 border-t bg-white">
+        <div class="flex items-center space-x-2">
+          <button id="prev-page-btn" class="px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-500 hover:text-blue-500 transition">
+            <i class="fas fa-chevron-left mr-1"></i> Anterior
+          </button>
+          <span id="page-info" class="text-sm text-gray-600">Página <span id="current-page">1</span> de <span id="total-pages">?</span></span>
+          <button id="next-page-btn" class="px-4 py-2 rounded-lg border border-gray-200 hover:border-blue-500 hover:text-blue-500 transition">
+            Siguiente <i class="fas fa-chevron-right ml-1"></i>
+          </button>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <button id="bookmark-btn" class="p-2 rounded-lg border border-gray-200 hover:border-yellow-400 hover:text-yellow-600 transition" title="Agregar a favoritos">
+            <i class="far fa-bookmark"></i>
+          </button>
+          <button id="zoom-in-btn" class="p-2 rounded-lg border border-gray-200 hover:border-blue-500 hover:text-blue-500 transition" title="Acercar">
+            <i class="fas fa-search-plus"></i>
+          </button>
+          <button id="zoom-out-btn" class="p-2 rounded-lg border border-gray-200 hover:border-blue-500 hover:text-blue-500 transition" title="Alejar">
+            <i class="fas fa-search-minus"></i>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -238,6 +262,7 @@
     let allBooks = [];
     let filteredBooks = [];
     let currentBookUrl = '';
+    let currentBookId = null;
     
     // Referencias a elementos DOM
     const booksGrid = document.getElementById('books-grid');
@@ -259,6 +284,13 @@
     const paginationDots = document.getElementById('pagination-dots');
     const prevPagePagination = document.getElementById('prev-page');
     const nextPagePagination = document.getElementById('next-page');
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const prevPageBtn = document.getElementById('prev-page-btn');
+    const nextPageBtn = document.getElementById('next-page-btn');
+    const currentPageSpan = document.getElementById('current-page');
+    const totalPagesSpan = document.getElementById('total-pages');
     
     // Datos de libros con PDFs reales
     function fetchBooks() {
@@ -390,11 +422,15 @@
       pdfModal.classList.remove('hidden');
       modalBookTitle.textContent = book.title;
       currentBookUrl = book.pdfUrl;
+      currentBookId = book.id;
       
       // Mostrar estado de carga
       pdfLoading.classList.remove('hidden');
       pdfIframe.classList.add('hidden');
       pdfError.classList.add('hidden');
+      
+      // Actualizar botón de favoritos
+      updateBookmarkButton();
       
       // Cargar PDF
       loadPdf(book.pdfUrl);
@@ -433,6 +469,43 @@
           pdfError.classList.remove('hidden');
         }
       }, 10000);
+    }
+    
+    // Actualizar estado del botón de favoritos
+    function updateBookmarkButton() {
+      const favorites = JSON.parse(localStorage.getItem('favoriteBooks') || '[]');
+      const isFavorite = favorites.includes(currentBookId);
+      const icon = bookmarkBtn.querySelector('i');
+      
+      if (isFavorite) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        bookmarkBtn.classList.add('bg-yellow-100', 'border-yellow-400', 'text-yellow-600');
+      } else {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        bookmarkBtn.classList.remove('bg-yellow-100', 'border-yellow-400', 'text-yellow-600');
+      }
+    }
+    
+    // Agregar/quitar de favoritos
+    function toggleFavorite() {
+      if (!currentBookId) return;
+      
+      const favorites = JSON.parse(localStorage.getItem('favoriteBooks') || '[]');
+      const isFavorite = favorites.includes(currentBookId);
+      
+      if (isFavorite) {
+        // Quitar de favoritos
+        const index = favorites.indexOf(currentBookId);
+        favorites.splice(index, 1);
+      } else {
+        // Agregar a favoritos
+        favorites.push(currentBookId);
+      }
+      
+      localStorage.setItem('favoriteBooks', JSON.stringify(favorites));
+      updateBookmarkButton();
     }
     
     // Filtrar libros
@@ -509,6 +582,32 @@
         if (currentBookUrl) {
           loadPdf(currentBookUrl);
         }
+      });
+      
+      // Controles del visor PDF
+      bookmarkBtn.addEventListener('click', toggleFavorite);
+      
+      prevPageBtn.addEventListener('click', () => {
+        const currentPage = parseInt(currentPageSpan.textContent);
+        if (currentPage > 1) {
+          currentPageSpan.textContent = currentPage - 1;
+        }
+      });
+      
+      nextPageBtn.addEventListener('click', () => {
+        const currentPage = parseInt(currentPageSpan.textContent);
+        const totalPages = parseInt(totalPagesSpan.textContent);
+        if (currentPage < totalPages) {
+          currentPageSpan.textContent = currentPage + 1;
+        }
+      });
+      
+      zoomInBtn.addEventListener('click', () => {
+        alert('Función de zoom disponible en la versión completa.\nPor ahora, usa el botón "Abrir en nueva pestaña" para controles de zoom.');
+      });
+      
+      zoomOutBtn.addEventListener('click', () => {
+        alert('Función de zoom disponible en la versión completa.\nPor ahora, usa el botón "Abrir en nueva pestaña" para controles de zoom.');
       });
       
       searchInput.addEventListener('input', debounce(function() {
