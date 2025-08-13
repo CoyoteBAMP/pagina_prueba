@@ -296,6 +296,7 @@
     function fetchBooks() {
       return new Promise((resolve) => {
         const mockBooks = [
+          // LIBROS CON PDFs REALES Y FUNCIONALES
           {
             id: 1,
             title: "Manual de JavaScript",
@@ -343,6 +344,200 @@
             category: "literatura",
             cover: "https://images.unsplash.com/photo-1541963463532-d68292c34d19?w=400",
             pdfUrl: "https://www.gutenberg.org/files/1342/1342-pdf.pdf"
+          },
+          {
+            id: 7,
+            title: "Frankenstein",
+            author: "Mary Shelley",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            pdfUrl: "https://www.gutenberg.org/files/84/84-pdf.pdf"
+          },
+          {
+            id: 8,
+            title: "The Great Gatsby",
+            author: "F. Scott Fitzgerald",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
+            pdfUrl: "https://www.gutenberg.org/files/64317/64317-pdf.pdf"
+          },
+          {
+            id: 9,
+            title: "Dracula",
+            author: "Bram Stoker",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400",
+            pdfUrl: "https://www.gutenberg.org/files/345/345-pdf.pdf"
+          },
+          {
+            id: 10,
+            title: "The Time Machine",
+            author: "H.G. Wells",
+            category: "ciencia",
+            cover: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=400",
+            pdfUrl: "https://www.gutenberg.org/files/35/35-pdf.pdf"
+          },
+          {
+            id: 11,
+            title: "A Study in Scarlet",
+            author: "Arthur Conan Doyle",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
+            pdfUrl: "https://www.gutenberg.org/files/244/244-pdf.pdf"
+          },
+          
+          // LIBROS ADICIONALES (simulados pero abundantes)
+          {
+            id: 12,
+            title: "Don Quijote de la Mancha",
+            author: "Miguel de Cervantes",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 13,
+            title: "Breve historia del tiempo",
+            author: "Stephen Hawking",
+            category: "ciencia",
+            cover: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 14,
+            title: "Historia del Arte",
+            author: "E.H. Gombrich",
+            category: "arte",
+            cover: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 15,
+            title: "El Imperio Romano",
+            author: "Mary Beard",
+            category: "historia",
+            cover: "https://images.unsplash.com/photo-1594736797933-d0401ba2fbaa?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 16,
+            title: "Cien años de soledad",
+            author: "Gabriel García Márquez",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 17,
+            title: "El origen de las especies",
+            author: "Charles Darwin",
+            category: "ciencia",
+            cover: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 18,
+            title: "La Segunda Guerra Mundial",
+            author: "Winston Churchill",
+            category: "historia",
+            cover: "https://images.unsplash.com/photo-1594736797933-d0401ba2fbaa?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 19,
+            title: "El Principito",
+            author: "Antoine de Saint-Exupéry",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 20,
+            title: "El universo en una cáscara de nuez",
+            author: "Stephen Hawking",
+            category: "ciencia",
+            cover: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 21,
+            title: "La inteligencia artificial",
+            author: "Stuart Russell",
+            category: "tecnologia",
+            cover: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 22,
+            title: "Historia de la Filosofía",
+            author: "Bertrand Russell",
+            category: "historia",
+            cover: "https://images.unsplash.com/photo-1594736797933-d0401ba2fbaa?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 23,
+            title: "Rayuela",
+            author: "Julio Cortázar",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 24,
+            title: "Las vanguardias artísticas",
+            author: "Mario de Micheli",
+            category: "arte",
+            cover: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 25,
+            title: "Programación en Python",
+            author: "Mark Lutz",
+            category: "tecnologia",
+            cover: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 26,
+            title: "1984",
+            author: "George Orwell",
+            category: "literatura",
+            cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 27,
+            title: "Cosmos",
+            author: "Carl Sagan",
+            category: "ciencia",
+            cover: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 28,
+            title: "El Renacimiento",
+            author: "Jacob Burckhardt",
+            category: "historia",
+            cover: "https://images.unsplash.com/photo-1594736797933-d0401ba2fbaa?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 29,
+            title: "Las Meninas",
+            author: "John Berger",
+            category: "arte",
+            cover: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
+            pdfUrl: "sample.pdf"
+          },
+          {
+            id: 30,
+            title: "Machine Learning",
+            author: "Andrew Ng",
+            category: "tecnologia",
+            cover: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400",
+            pdfUrl: "sample.pdf"
           }
         ];
         
