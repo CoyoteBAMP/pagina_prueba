@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biblioteca Virtual</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/web/pdf_viewer.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style id="app-style">
+    :root {
+      --primary: #007AFF;
+      --secondary: #FF2D55;
+      --light: #FAFAFA;
+      --dark: #333333;
+      --text-secondary: #666666;
+      --border-color: #E0E0E0;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--light);
+      color: var(--dark);
+    }
+    
+    .category-btn {
+      transition: all 0.3s ease;
+      border-bottom: 2px solid transparent;
+      color: #555555;
+      font-size: 14px;
+    }
+    
+    .category-btn.active {
+      background-color: transparent;
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .book-card {
+      transition: all 0.3s ease;
+      height: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+    
+    .book-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.08);
+    }
+    
+    .book-cover {
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    
+    .modal-overlay {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .pdf-controls {
+      background: white;
+    }
+    
+    .page-btn {
+      transition: all 0.2s ease;
+      color: #555555;
+    }
+    
+    .page-btn:hover {
+      background-color: transparent;
+      color: var(--primary);
+    }
+    
+    .loader {
+      border-top-color: var(--primary);
+      animation: spinner 0.6s linear infinite;
+    }
+    
+    @keyframes spinner {
+      to {transform: rotate(360deg);}
+    }
+    
+    /* Estado "visto" para los libros ya abiertos */
+    .book-viewed::after {
+      content: "";
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--secondary);
+      border: 2px solid white;
+    }
+    
+    /* Personalización de la barra de búsqueda */
+    .search-bar:focus {
+      box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2);
+    }
+
+    /* Personalización de la paginación */
+    .pagination-dot {
+      transition: all 0.2s ease;
+    }
+    
+    .pagination-dot.active {
+      background-color: var(--primary);
+      transform: scale(1.3);
+    }
+
+    /* Personalización del scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0064d6;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Header con título y búsqueda -->
+  <header class="bg-white shadow-md">
+    <div class="container mx-auto px-4 py-6">
+      <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+        <h1 class="text-3xl md:text-4xl font-semibold tracking-tight text-primary">
+          <i class="fas fa-book-open mr-2 text-gray-600"></i>Biblioteca Virtual
+        </h1>
+        <div class="relative w-full md:w-1/3">
+          <input 
+            type="text" 
+            id="search" 
+            class="search-bar w-full py-2 pl-10 pr-4 bg-white rounded-lg border border-gray-300 shadow-inner text-gray-700 placeholder-gray-400 focus:outline-none" 
+            placeholder="Buscar por título o autor..."
+          >
+          <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Categorías -->
+  <div class="bg-white shadow-sm">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+        <button class="category-btn active px-3 py-2 font-medium" data-category="all">Todos</button>
+        <button class="category-btn px-3 py-2 font-medium" data-category="literatura">Literatura</button>
+        <button class="category-btn px-3 py-2 font-medium" data-category="ciencia">Ciencia</button>
+        <button class="category-btn px-3 py-2 font-medium" data-category="historia">Historia</button>
+        <button class="category-btn px-3 py-2 font-medium" data-category="tecnologia">Tecnología</button>
+        <button class="category-btn px-3 py-2 font-medium" data-category="arte">Arte</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Contenedor principal -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- Estado de carga -->
+    <div id="loading-state" class="flex flex-col items-center justify-center py-20">
+      <div class="loader h-12 w-12 border-4 border-gray-200 rounded-full"></div>
+      <p class="mt-4 text-gray-600">Cargando biblioteca...</p>
+    </div>
+    
+    <!-- Estado de error -->
+    <div id="error-state" class="hidden flex flex-col items-center justify-center py-20 text-center">
+      <div class="bg-red-100 p-6 rounded-lg">
+        <i class="fas fa-exclamation-triangle text-red-500 text-5xl mb-4"></i>
+        <h3 class="text-xl font-bold text-red-700">¡Ups! Algo salió mal</h3>
+        <p class="text-red-600 mt-2">No pudimos cargar los libros. Por favor intenta de nuevo más tarde.</p>
+        <button id="retry-button" class="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300">
+          <i class="fas fa-redo mr-2"></i>Reintentar
+        </button>
+      </div>
+    </div>
+    
+    <!-- Estado vacío (sin resultados) -->
+    <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-center">
+      <img src="https://cdn.pixabay.com/photo/2017/06/20/08/12/maintenance-2422173_1280.png" alt="Sin resultados" class="w-48 h-auto mb-4">
+      <h3 class="text-xl font-bold text-gray-700">No encontramos resultados</h3>
+      <p class="text-gray-600 mt-2">Intenta con otra búsqueda o categoría</p>
+    </div>
+    
+    <!-- Grid de libros -->
+    <div id="books-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Los libros se cargarán dinámicamente aquí -->
+    </div>
+    
+    <!-- Paginación -->
+    <div id="pagination" class="hidden flex justify-center items-center space-x-2 mt-10">
+      <button id="prev-page" class="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <div id="pagination-dots" class="flex space-x-2">
+        <!-- Dots generados dinámicamente -->
+      </div>
+      <button id="next-page" class="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-100">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  </main>
+  
+  <!-- Modal para visualizar PDF -->
+  <div id="pdf-modal" class="modal-overlay hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-6xl h-full md:h-5/6 rounded-xl shadow-lg flex flex-col relative overflow-hidden">
+      <!-- Header del modal -->
+      <div class="flex justify-between items-center p-4 border-b">
+        <h3 id="modal-book-title" class="text-xl font-semibold truncate">Título del libro</h3>
+        <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <!-- Contenedor del PDF -->
+      <div id="pdf-container" class="flex-grow overflow-auto relative">
+        <div id="pdf-viewer" class="h-full"></div>
+        
+        <!-- Mensaje de carga del PDF -->
+        <div id="pdf-loading" class="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-80">
+          <div class="loader h-10 w-10 border-4 border-gray-200 rounded-full"></div>
+          <p class="mt-4 text-gray-600">Cargando documento...</p>
+        </div>
+      </div>
+      
+      <!-- Controles de navegación -->
+      <div class="pdf-controls flex justify-between items-center p-4 border-t">
+        <div class="flex items-center space-x-2">
+          <button id="prev-page-btn" class="page-btn px-4 py-2 rounded-lg border border-gray-200 hover:border-primary">
+            <i class="fas fa-chevron-left mr-1"></i> Anterior
+          </button>
+          <span id="page-info" class="text-sm">Página <span id="current-page">1</span> de <span id="total-pages">?</span></span>
+          <button id="next-page-btn" class="page-btn px-4 py-2 rounded-lg border border-gray-200 hover:border-primary">
+            Siguiente <i class="fas fa-chevron-right ml-1"></i>
+          </button>
+        </div>
+        
+        <div class="flex items-center space-x-2">
+          <button id="bookmark-btn" class="page-btn p-2 rounded-lg border border-gray-200 hover:border-primary">
+            <i class="far fa-bookmark"></i>
+          </button>
+          <button id="zoom-in-btn" class="page-btn p-2 rounded-lg border border-gray-200 hover:border-primary">
+            <i class="fas fa-search-plus"></i>
+          </button>
+          <button id="zoom-out-btn" class="page-btn p-2 rounded-lg border border-gray-200 hover:border-primary">
+            <i class="fas fa-search-minus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
+  <script id="app-script">
+    // Configuración básica
+    const ITEMS_PER_PAGE = 12;
+    let currentPage = 1;
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let allBooks = [];
+    let filteredBooks = [];
+    
+    // Referencias a elementos DOM
+    const booksGrid = document.getElementById('books-grid');
+    const loadingState = document.getElementById('loading-state');
+    const errorState = document.getElementById('error-state');
+    const emptyState = document.getElementById('empty-state');
+    const retryButton = document.getElementById('retry-button');
+    const searchInput = document.getElementById('search');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    const pdfModal = document.getElementById('pdf-modal');
+    const closeModal = document.getElementById('close-modal');
+    const modalBookTitle = document.getElementById('modal-book-title');
+    const pdfContainer = document.getElementById('pdf-container');
+    const pdfLoading = document.getElementById('pdf-loading');
+    const currentPageSpan = document.getElementById('current-page');
+    const totalPagesSpan = document.getElementById('total-pages');
+    const prevPageBtn = document.getElementById('prev-page-btn');
+    const nextPageBtn = document.getElementById('next-page-btn');
+    const zoomInBtn = document.getElementById('zoom-in-btn');
+    const zoomOutBtn = document.getElementById('zoom-out-btn');
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    const pagination = document.getElementById('pagination');
+    const paginationDots = document.getElementById('pagination-dots');
+    const prevPagePagination = document.getElementById('prev-page');
+    const nextPagePagination = document.getElementById('next-page');
+    
+    // Simula la carga de datos desde una API
+    function fetchBooks() {
+      return new Promise((resolve, reject) => {
+        // Simulamos una llamada de red
+        setTimeout(() => {
+          const mockBooks = [
+            {
+              id: 1,
+              title: "Don Quijote de la Mancha",
+              author: "Miguel de Cervantes",
+              category: "literatura",
+              cover: "https://cdn.pixabay.com/photo/2018/01/03/09/09/book-3057902_1280.jpg",
+              pdfUrl: "sample.pdf" // En una app real, esto sería una URL al archivo PDF
+            },
+            {
+              id: 2,
+              title: "Breve historia del tiempo",
+              author: "Stephen Hawking",
+              category: "ciencia",
+              cover: "https://cdn.pixabay.com/photo/2015/11/19/21/10/glasses-1052010_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 3,
+              title: "Historia del Arte",
+              author: "E.H. Gombrich",
+              category: "arte",
+              cover: "https://cdn.pixabay.com/photo/2016/03/05/19/54/art-1238602_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 4,
+              title: "Introducción a la Programación",
+              author: "John Smith",
+              category: "tecnologia",
+              cover: "https://cdn.pixabay.com/photo/2016/11/30/20/58/programming-1873854_1280.png",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 5,
+              title: "El Imperio Romano",
+              author: "Mary Beard",
+              category: "historia",
+              cover: "https://cdn.pixabay.com/photo/2018/10/28/10/51/roma-3778993_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 6,
+              title: "Cien años de soledad",
+              author: "Gabriel García Márquez",
+              category: "literatura",
+              cover: "https://cdn.pixabay.com/photo/2015/09/05/20/02/butterfly-924074_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 7,
+              title: "El origen de las especies",
+              author: "Charles Darwin",
+              category: "ciencia",
+              cover: "https://cdn.pixabay.com/photo/2016/11/14/04/45/elephant-1822636_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 8,
+              title: "La Segunda Guerra Mundial",
+              author: "Winston Churchill",
+              category: "historia",
+              cover: "https://cdn.pixabay.com/photo/2017/08/11/11/55/world-war-ii-2629742_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 9,
+              title: "El Principito",
+              author: "Antoine de Saint-Exupéry",
+              category: "literatura",
+              cover: "https://cdn.pixabay.com/photo/2018/03/18/20/01/moon-3237626_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 10,
+              title: "El universo en una cáscara de nuez",
+              author: "Stephen Hawking",
+              category: "ciencia",
+              cover: "https://cdn.pixabay.com/photo/2011/12/14/12/21/orion-nebula-11107_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 11,
+              title: "La inteligencia artificial",
+              author: "Stuart Russell",
+              category: "tecnologia",
+              cover: "https://cdn.pixabay.com/photo/2018/06/07/16/49/virtual-3460451_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 12,
+              title: "Historia de la Filosofía",
+              author: "Bertrand Russell",
+              category: "historia",
+              cover: "https://cdn.pixabay.com/photo/2017/05/08/08/14/socrates-2294582_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 13,
+              title: "Rayuela",
+              author: "Julio Cortázar",
+              category: "literatura",
+              cover: "https://cdn.pixabay.com/photo/2014/05/03/00/56/summerfield-336672_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 14,
+              title: "La teoría de todo",
+              author: "Stephen Hawking",
+              category: "ciencia",
+              cover: "https://cdn.pixabay.com/photo/2017/02/12/21/29/universe-2061634_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 15,
+              title: "Las vanguardias artísticas",
+              author: "Mario de Micheli",
+              category: "arte",
+              cover: "https://cdn.pixabay.com/photo/2016/06/29/08/44/abstract-1486599_1280.jpg",
+              pdfUrl: "sample.pdf"
+            },
+            {
+              id: 16,
+              title: "Programación en Python",
+              author: "Mark Lutz",
+              category: "tecnologia",
+              cover: "https://cdn.pixabay.com/photo/2014/07/01/12/35/taxi-381233_1280.jpg",
+              pdfUrl: "sample.pdf"
+            }
+          ];
+          
+          // Simula una probabilidad del 10% de error para mostrar el estado de error
+          if (Math.random() < 0.1) {
+            reject(new Error("Error al cargar los libros"));
+          } else {
+            resolve(mockBooks);
+          }
+        }, 1500); // Simulamos 1.5 segundos de carga
+      });
+    }
+    
+    // Inicializa la aplicación
+    function initApp() {
+      // Mostramos el estado de carga
+      showLoadingState();
+      
+      // Obtenemos los libros
+      fetchBooks()
+        .then(books => {
+          allBooks = books;
+          filteredBooks = [...allBooks];
+          hideLoadingState();
+          renderBooks();
+          setupPagination();
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          showErrorState();
+        });
+      
+      // Configurar event listeners
+      setupEventListeners();
+    }
+    
+    // Renderiza los libros en el grid
+    function renderBooks() {
+      // Limpiamos el grid
+      booksGrid.innerHTML = '';
+      
+      // Calculamos los índices de inicio y fin para la paginación
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      
+      // Obtenemos los libros de la página actual
+      const booksToRender = filteredBooks.slice(startIndex, endIndex);
+      
+      // Si no hay libros, mostramos el estado vacío
+      if (booksToRender.length === 0) {
+        showEmptyState();
+        return;
+      }
+      
+      // Ocultamos el estado vacío
+      hideEmptyState();
+      
+      // Mostramos el grid
+      booksGrid.classList.remove('hidden');
+      
+      // Renderizamos cada libro
+      booksToRender.forEach(book => {
+        const bookCard = document.createElement('div');
+        bookCard.className = 'book-card bg-white overflow-hidden relative';
+        bookCard.setAttribute('data-id', book.id);
+        
+        // Marcador para libros ya vistos (guardado en localStorage)
+        const viewedBooks = JSON.parse(localStorage.getItem('viewedBooks') || '[]');
+        if (viewedBooks.includes(book.id)) {
+          bookCard.classList.add('book-viewed');
+        }
+        
+        bookCard.innerHTML = `
+          <div class="h-48 sm:h-64 overflow-hidden">
+            <img src="${book.cover}" alt="${book.title}" class="book-cover w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+          </div>
+          <div class="p-4">
+            <span class="inline-block px-3 py-1 text-xs font-semibold text-white bg-primary rounded-full mb-2">${book.category}</span>
+            <h3 class="font-semibold text-lg mb-1 line-clamp-1">${book.title}</h3>
+            <p class="text-text-secondary text-sm">${book.author}</p>
+            <button class="mt-3 w-full py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition duration-300">
+              Leer
+            </button>
+          </div>
+        `;
+        
+        // Añadimos el evento click para abrir el modal
+        bookCard.addEventListener('click', () => openBookModal(book));
+        
+        // Añadimos el libro al grid
+        booksGrid.appendChild(bookCard);
+      });
+      
+      // Actualizamos la paginación
+      updatePaginationControls();
+    }
+    
+    // Filtrar libros por categoría y búsqueda
+    function filterBooks() {
+      filteredBooks = allBooks.filter(book => {
+        // Filtrar por categoría
+        const categoryMatch = currentCategory === 'all' || book.category === currentCategory;
+        
+        // Filtrar por búsqueda
+        const searchLower = searchQuery.toLowerCase();
+        const titleMatch = book.title.toLowerCase().includes(searchLower);
+        const authorMatch = book.author.toLowerCase().includes(searchLower);
+        
+        return categoryMatch && (searchQuery === '' || titleMatch || authorMatch);
+      });
+      
+      // Resetear a la primera página
+      currentPage = 1;
+      
+      // Renderizar los libros
+      renderBooks();
+      
+      // Configurar la paginación
+      setupPagination();
+    }
+    
+    // Configurar la paginación
+    function setupPagination() {
+      const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
+      
+      // Si solo hay una página, ocultamos la paginación
+      if (totalPages <= 1) {
+        pagination.classList.add('hidden');
+        return;
+      }
+      
+      // Mostramos la paginación
+      pagination.classList.remove('hidden');
+      
+      // Limpiamos los dots
+      paginationDots.innerHTML = '';
+      
+      // Añadimos los dots
+      for (let i = 1; i <= totalPages; i++) {
+        const dot = document.createElement('button');
+        dot.className = `pagination-dot w-3 h-3 rounded-full bg-gray-300 ${i === currentPage ? 'active' : ''}`;
+        dot.setAttribute('data-page', i);
+        dot.addEventListener('click', () => {
+          currentPage = i;
+          renderBooks();
+        });
+        paginationDots.appendChild(dot);
+      }
+      
+      // Actualizamos los controles de paginación
+      updatePaginationControls();
+    }
+    
+    // Actualizar los controles de paginación
+    function updatePaginationControls() {
+      const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
+      
+      // Deshabilitamos el botón anterior si estamos en la primera página
+      if (currentPage === 1) {
+        prevPagePagination.classList.add('opacity-50', 'cursor-not-allowed');
+        prevPagePagination.disabled = true;
+      } else {
+        prevPagePagination.classList.remove('opacity-50', 'cursor-not-allowed');
+        prevPagePagination.disabled = false;
+      }
+      
+      // Deshabilitamos el botón siguiente si estamos en la última página
+      if (currentPage === totalPages) {
+        nextPagePagination.classList.add('opacity-50', 'cursor-not-allowed');
+        nextPagePagination.disabled = true;
+      } else {
+        nextPagePagination.classList.remove('opacity-50', 'cursor-not-allowed');
+        nextPagePagination.disabled = false;
+      }
+      
+      // Actualizamos la clase active en los dots
+      const dots = paginationDots.querySelectorAll('.pagination-dot');
+      dots.forEach(dot => {
+        const page = parseInt(dot.getAttribute('data-page'));
+        if (page === currentPage) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+    }
+    
+    // Abrir el modal del libro
+    function openBookModal(book) {
+      // Mostramos el modal
+      pdfModal.classList.remove('hidden');
+      
+      // Actualizamos el título
+      modalBookTitle.textContent = book.title;
+      
+      // Mostramos el estado de carga del PDF
+      pdfLoading.classList.remove('hidden');
+      
+      // Marcamos el libro como visto
+      const viewedBooks = JSON.parse(localStorage.getItem('viewedBooks') || '[]');
+      if (!viewedBooks.includes(book.id)) {
+        viewedBooks.push(book.id);
+        localStorage.setItem('viewedBooks', JSON.stringify(viewedBooks));
+      }
+      
+      // En una aplicación real, cargaríamos el PDF aquí
+      // Por ahora, simplemente simulamos la carga
+      setTimeout(() => {
+        // Ocultamos el estado de carga
+        pdfLoading.classList.add('hidden');
+        
+        // Mostramos un mensaje de prototipo en el visor de PDF
+        const pdfViewer = document.getElementById('pdf-viewer');
+        pdfViewer.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full">
+            <img src="https://cdn.pixabay.com/photo/2018/09/27/09/22/artificial-intelligence-3706562_1280.jpg" alt="PDF Preview" class="w-1/2 mb-6">
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">Prototipo de Visualizador PDF</h3>
+            <p class="text-gray-600 text-center max-w-md">
+              Este es un prototipo. En la versión completa, aquí se mostraría el contenido del libro "${book.title}" por ${book.author}.
+            </p>
+          </div>
+        `;
+        
+        // Actualizamos el contador de páginas
+        currentPageSpan.textContent = '1';
+        totalPagesSpan.textContent = '10';
+      }, 1500);
+    }
+    
+    // Configurar event listeners
+    function setupEventListeners() {
+      // Listener para el botón de reintentar
+      retryButton.addEventListener('click', initApp);
+      
+      // Listener para cerrar el modal
+      closeModal.addEventListener('click', () => {
+        pdfModal.classList.add('hidden');
+      });
+      
+      // Listener para la búsqueda
+      searchInput.addEventListener('input', debounce(function() {
+        searchQuery = this.value.trim();
+        filterBooks();
+      }, 300));
+      
+      // Listeners para los botones de categoría
+      categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Quitamos la clase active de todos los botones
+          categoryButtons.forEach(btn => btn.classList.remove('active'));
+          
+          // Añadimos la clase active al botón clicado
+          this.classList.add('active');
+          
+          // Actualizamos la categoría actual
+          currentCategory = this.getAttribute('data-category');
+          
+          // Filtramos los libros
+          filterBooks();
+        });
+      });
+      
+      // Listeners para la paginación
+      prevPagePagination.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderBooks();
+        }
+      });
+      
+      nextPagePagination.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredBooks.length / ITEMS_PER_PAGE);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderBooks();
+        }
+      });
+      
+      // Listeners para el visor de PDF
+      prevPageBtn.addEventListener('click', () => {
+        // En un visor real, esto cambiaría la página
+        const currentPage = parseInt(currentPageSpan.textContent);
+        if (currentPage > 1) {
+          currentPageSpan.textContent = currentPage - 1;
+        }
+      });
+      
+      nextPageBtn.addEventListener('click', () => {
+        // En un visor real, esto cambiaría la página
+        const currentPage = parseInt(currentPageSpan.textContent);
+        const totalPages = parseInt(totalPagesSpan.textContent);
+        if (currentPage < totalPages) {
+          currentPageSpan.textContent = currentPage + 1;
+        }
+      });
+      
+      // Listener para el botón de marcador
+      bookmarkBtn.addEventListener('click', function() {
+        // Toggleamos entre las clases far y fas para el icono
+        const icon = this.querySelector('i');
+        if (icon.classList.contains('far')) {
+          icon.classList.remove('far');
+          icon.classList.add('fas');
+          this.classList.add('bg-yellow-400');
+        } else {
+          icon.classList.remove('fas');
+          icon.classList.add('far');
+          this.classList.remove('bg-yellow-400');
+        }
+      });
+      
+      // Listeners para los botones de zoom
+      zoomInBtn.addEventListener('click', () => {
+        // En una aplicación real, esto aumentaría el zoom
+        alert('Función de zoom disponible en la versión completa');
+      });
+      
+      zoomOutBtn.addEventListener('click', () => {
+        // En una aplicación real, esto reduciría el zoom
+        alert('Función de zoom disponible en la versión completa');
+      });
+      
+      // Listener para cerrar el modal al hacer clic fuera
+      pdfModal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          pdfModal.classList.add('hidden');
+        }
+      });
+      
+      // Listener para las teclas
+      document.addEventListener('keydown', function(e) {
+        // Cerrar el modal con Escape
+        if (e.key === 'Escape' && !pdfModal.classList.contains('hidden')) {
+          pdfModal.classList.add('hidden');
+        }
+      });
+    }
+    
+    // Helpers
+    function showLoadingState() {
+      loadingState.classList.remove('hidden');
+      booksGrid.classList.add('hidden');
+      errorState.classList.add('hidden');
+      emptyState.classList.add('hidden');
+      pagination.classList.add('hidden');
+    }
+    
+    function hideLoadingState() {
+      loadingState.classList.add('hidden');
+    }
+    
+    function showErrorState() {
+      errorState.classList.remove('hidden');
+      loadingState.classList.add('hidden');
+      booksGrid.classList.add('hidden');
+      emptyState.classList.add('hidden');
+      pagination.classList.add('hidden');
+    }
+    
+    function showEmptyState() {
+      emptyState.classList.remove('hidden');
+      booksGrid.classList.add('hidden');
+      pagination.classList.add('hidden');
+    }
+    
+    function hideEmptyState() {
+      emptyState.classList.add('hidden');
+    }
+    
+    // Función para debounce (limitar la frecuencia de ejecución)
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func.apply(this, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+    
+    // Inicializamos la aplicación cuando el DOM esté cargado
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
