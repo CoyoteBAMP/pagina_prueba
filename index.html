@@ -300,13 +300,12 @@
     function fetchBooks() {
       return new Promise((resolve) => {
         const mockBooks = [
-          // 5 libros con PDFs reales que funcionan
           {
             id: 1,
             title: "Eloquent JavaScript",
             author: "Marijn Haverbeke",
             category: "tecnologia",
-            cover: "https://images.unsplash.com/photo-1581091012184-5c8f88e6a57b?w=400",
+            cover: "https://images.unsplash.com/photo-1581091215367-59ab6a2a8e28?w=400", // código / laptop
             pdfUrl: "https://eloquentjavascript.net/Eloquent_JavaScript.pdf",
             hasRealPdf: true
           },
@@ -315,7 +314,7 @@
             title: "University Physics Vol. 1",
             author: "OpenStax",
             category: "fisica",
-            cover: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7?w=400",
+            cover: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400", // fórmulas y ciencia
             pdfUrl: "https://d3bxy9euw4e147.cloudfront.net/oscms-prodcms/media/documents/UniversityPhysicsVolume1-LR.pdf",
             hasRealPdf: true
           },
@@ -324,7 +323,7 @@
             title: "Principles of Management",
             author: "OpenStax",
             category: "economia",
-            cover: "https://images.unsplash.com/photo-1574775795456-2db0dc1a5854?w=400",
+            cover: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400", // negocios / management
             pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/PrinciplesofManagement-OP_mGBMvoU.pdf",
             hasRealPdf: true
           },
@@ -333,7 +332,7 @@
             title: "Introduction to Philosophy",
             author: "OpenStax",
             category: "filosofia",
-            cover: "https://images.unsplash.com/photo-1526318472351-bc6c2ebd0f8d?w=400",
+            cover: "https://images.unsplash.com/photo-1505666287591-06d0aaf65c3d?w=400", // libros antiguos / filosofía
             pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Introduction_to_Philosophy-WEB_cszrKYp.pdf",
             hasRealPdf: true
           },
@@ -342,18 +341,18 @@
             title: "Introduction to Python Programming",
             author: "OpenStax",
             category: "programacion",
-            cover: "https://images.unsplash.com/photo-1564869733401-ffd9e1b38338?w=400",
+            cover: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400", // código Python
             pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Introduction_to_Python_Programming_-_WEB.pdf",
             hasRealPdf: true
           },
-        
-          // LIBROS SIMULADOS PARA RELLENO
+    
+          // LIBROS SIMULADOS
           {
             id: 6,
             title: "Don Quijote de la Mancha",
             author: "Miguel de Cervantes",
             category: "literatura",
-            cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
+            cover: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400", // libro antiguo
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -362,27 +361,7 @@
             title: "El Principito",
             author: "Antoine de Saint-Exupéry",
             category: "literatura",
-            cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-            pdfUrl: "simulated",
-            hasRealPdf: false
-          },
-          
-          // LIBROS SIMULADOS PARA LLENAR LA BIBLIOTECA
-          {
-            id: 6,
-            title: "Don Quijote de la Mancha",
-            author: "Miguel de Cervantes",
-            category: "literatura",
-            cover: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
-            pdfUrl: "simulated",
-            hasRealPdf: false
-          },
-          {
-            id: 7,
-            title: "El Principito",
-            author: "Antoine de Saint-Exupéry",
-            category: "literatura",
-            cover: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            cover: "https://images.unsplash.com/photo-1535905748047-14b2415c37b1?w=400", // ilustración cielo
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -391,7 +370,7 @@
             title: "Cien años de soledad",
             author: "Gabriel García Márquez",
             category: "literatura",
-            cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400",
+            cover: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?w=400", // realismo mágico / naturaleza
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -400,7 +379,7 @@
             title: "Breve historia del tiempo",
             author: "Stephen Hawking",
             category: "ciencia",
-            cover: "https://images.unsplash.com/photo-1446776877081-d282a0f896e2?w=400",
+            cover: "https://images.unsplash.com/photo-1473923377535-0002805f57e8?w=400", // universo / espacio
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -409,37 +388,14 @@
             title: "Historia del Arte",
             author: "E.H. Gombrich",
             category: "arte",
-            cover: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400",
+            cover: "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?w=400", // museo / arte
             pdfUrl: "simulated",
             hasRealPdf: false
           }
         ];
-        
-        // Agregar más libros simulados...
-        const additionalBooks = [];
-        const categories = ['literatura', 'ciencia', 'historia', 'tecnologia', 'arte'];
-        const titles = [
-          'Python Programming', 'Machine Learning', 'React Fundamentals', 'Data Science',
-          '1984', 'Romeo y Julieta', 'La Odisea', 'Hamlet',
-          'Física Cuántica', 'Biología Molecular', 'Química Orgánica', 'Matemáticas',
-          'Segunda Guerra Mundial', 'Imperio Romano', 'Revolución Francesa', 'Historia Medieval',
-          'Diseño Gráfico', 'Fotografía', 'Escultura Moderna', 'Pintura Renacentista'
-        ];
-        
-        titles.forEach((title, index) => {
-          additionalBooks.push({
-            id: 11 + index,
-            title: title,
-            author: "Autor Ejemplo",
-            category: categories[index % categories.length],
-            cover: `https://images.unsplash.com/photo-${1507003211169 + index}?w=400`,
-            pdfUrl: "simulated",
-            hasRealPdf: false
-          });
-        });
-        
-        const allBooksData = [...mockBooks, ...additionalBooks.slice(0, 20)];
-        setTimeout(() => resolve(allBooksData), 1000);
+    
+        // Puedes seguir agregando más libros simulados con covers reales
+        resolve(mockBooks);
       });
     }
     
@@ -891,6 +847,7 @@
   </script>
 </body>
 </html>
+
 
 
 
