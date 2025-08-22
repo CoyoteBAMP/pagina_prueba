@@ -296,7 +296,7 @@
     const currentPageSpan = document.getElementById('current-page');
     const totalPagesSpan = document.getElementById('total-pages');
     
-    // Datos de libros con PDFs reales y funcionales
+    // Datos de libros con PDFs reales y funcionales - CORREGIDO
     function fetchBooks() {
       return new Promise((resolve) => {
         const mockBooks = [
@@ -305,7 +305,7 @@
             title: "Eloquent JavaScript",
             author: "Marijn Haverbeke",
             category: "tecnologia",
-            cover: "https://images.unsplash.com/photo-1581091215367-59ab6a2a8e28?w=400", // código / laptop
+            cover: "https://images.unsplash.com/photo-1581091215367-59ab6a2a8e28?w=400",
             pdfUrl: "https://eloquentjavascript.net/Eloquent_JavaScript.pdf",
             hasRealPdf: true
           },
@@ -313,8 +313,8 @@
             id: 2,
             title: "University Physics Vol. 1",
             author: "OpenStax",
-            category: "fisica",
-            cover: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400", // fórmulas y ciencia
+            category: "ciencia",
+            cover: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400",
             pdfUrl: "https://d3bxy9euw4e147.cloudfront.net/oscms-prodcms/media/documents/UniversityPhysicsVolume1-LR.pdf",
             hasRealPdf: true
           },
@@ -322,8 +322,8 @@
             id: 3,
             title: "Principles of Management",
             author: "OpenStax",
-            category: "economia",
-            cover: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400", // negocios / management
+            category: "ciencia",
+            cover: "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=400",
             pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/PrinciplesofManagement-OP_mGBMvoU.pdf",
             hasRealPdf: true
           },
@@ -331,8 +331,8 @@
             id: 4,
             title: "Introduction to Philosophy",
             author: "OpenStax",
-            category: "filosofia",
-            cover: "https://images.unsplash.com/photo-1505666287591-06d0aaf65c3d?w=400", // libros antiguos / filosofía
+            category: "historia",
+            cover: "https://images.unsplash.com/photo-1505666287591-06d0aaf65c3d?w=400",
             pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Introduction_to_Philosophy-WEB_cszrKYp.pdf",
             hasRealPdf: true
           },
@@ -340,19 +340,17 @@
             id: 5,
             title: "Introduction to Python Programming",
             author: "OpenStax",
-            category: "programacion",
-            cover: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400", // código Python
+            category: "tecnologia",
+            cover: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400",
             pdfUrl: "https://assets.openstax.org/oscms-prodcms/media/documents/Introduction_to_Python_Programming_-_WEB.pdf",
             hasRealPdf: true
           },
-    
-          // LIBROS SIMULADOS
           {
             id: 6,
             title: "Don Quijote de la Mancha",
             author: "Miguel de Cervantes",
             category: "literatura",
-            cover: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400", // libro antiguo
+            cover: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400",
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -361,7 +359,7 @@
             title: "El Principito",
             author: "Antoine de Saint-Exupéry",
             category: "literatura",
-            cover: "https://images.unsplash.com/photo-1535905748047-14b2415c37b1?w=400", // ilustración cielo
+            cover: "https://images.unsplash.com/photo-1535905748047-14b2415c37b1?w=400",
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -370,7 +368,7 @@
             title: "Cien años de soledad",
             author: "Gabriel García Márquez",
             category: "literatura",
-            cover: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?w=400", // realismo mágico / naturaleza
+            cover: "https://images.unsplash.com/photo-1509021436665-8f07dbf5bf1d?w=400",
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -379,7 +377,7 @@
             title: "Breve historia del tiempo",
             author: "Stephen Hawking",
             category: "ciencia",
-            cover: "https://images.unsplash.com/photo-1473923377535-0002805f57e8?w=400", // universo / espacio
+            cover: "https://images.unsplash.com/photo-1473923377535-0002805f57e8?w=400",
             pdfUrl: "simulated",
             hasRealPdf: false
           },
@@ -388,11 +386,14 @@
             title: "Historia del Arte",
             author: "E.H. Gombrich",
             category: "arte",
-            cover: "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?w=400", // museo / arte
+            cover: "https://images.unsplash.com/photo-1523741543316-beb7fc7023d8?w=400",
             pdfUrl: "simulated",
             hasRealPdf: false
           }
         ];
+        
+        // AQUÍ ESTABA EL PROBLEMA: Faltaba resolver la promesa
+        resolve(mockBooks);
       });
     }
     
@@ -437,7 +438,8 @@
         bookCard.className = 'book-card bg-white overflow-hidden relative cursor-pointer';
         bookCard.setAttribute('data-id', book.id);
         
-        const viewedBooks = JSON.parse(localStorage.getItem('viewedBooks') || '[]');
+        // Usar variables JavaScript en lugar de localStorage para compatibilidad
+        const viewedBooks = window.viewedBooks || [];
         if (viewedBooks.includes(book.id)) {
           bookCard.classList.add('book-viewed');
         }
@@ -481,11 +483,10 @@
       // Cargar PDF
       loadPdf(book.pdfUrl);
       
-      // Marcar como visto
-      const viewedBooks = JSON.parse(localStorage.getItem('viewedBooks') || '[]');
-      if (!viewedBooks.includes(book.id)) {
-        viewedBooks.push(book.id);
-        localStorage.setItem('viewedBooks', JSON.stringify(viewedBooks));
+      // Marcar como visto usando variables JavaScript
+      window.viewedBooks = window.viewedBooks || [];
+      if (!window.viewedBooks.includes(book.id)) {
+        window.viewedBooks.push(book.id);
       }
     }
     
@@ -503,7 +504,7 @@
       ];
       
       // Para otros archivos, mostrar contenido alternativo
-      if (pdfUrl === 'sample.pdf' || !workingPdfs.includes(pdfUrl)) {
+      if (pdfUrl === 'simulated' || !workingPdfs.includes(pdfUrl)) {
         // Mostrar contenido simulado para libros sin PDF real
         setTimeout(() => {
           pdfLoading.classList.add('hidden');
@@ -511,6 +512,7 @@
           iframe.classList.add('hidden');
           
           const pdfViewer = document.getElementById('pdf-viewer') || createPdfViewer();
+          pdfViewer.style.display = 'block';
           pdfViewer.innerHTML = `
             <div class="flex flex-col items-center justify-center h-full p-8 bg-gradient-to-br from-blue-50 to-indigo-100">
               <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl text-center">
@@ -550,7 +552,7 @@
           
           // Actualizar contador de páginas para simulación
           currentPageSpan.textContent = '1';
-          totalPagesSpan.textContent = Math.floor(Math.random() * 200) + 50; // Páginas aleatorias entre 50-250
+          totalPagesSpan.textContent = Math.floor(Math.random() * 200) + 50;
           
         }, 1000);
         return;
@@ -617,8 +619,8 @@
     
     // Actualizar estado del botón de favoritos
     function updateBookmarkButton() {
-      const favorites = JSON.parse(localStorage.getItem('favoriteBooks') || '[]');
-      const isFavorite = favorites.includes(currentBookId);
+      window.favoriteBooks = window.favoriteBooks || [];
+      const isFavorite = window.favoriteBooks.includes(currentBookId);
       const icon = bookmarkBtn.querySelector('i');
       
       if (isFavorite) {
@@ -844,6 +846,7 @@
   </script>
 </body>
 </html>
+
 
 
 
